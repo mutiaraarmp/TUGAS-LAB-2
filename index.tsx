@@ -1,80 +1,88 @@
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+} from 'react-native';
 
-const imageData = [
-  { main: 'https://picsum.photos/id/1011/200', alt: 'https://picsum.photos/id/1012/200' },
-  { main: 'https://picsum.photos/id/1013/200', alt: 'https://picsum.photos/id/1014/200' },
-  { main: 'https://picsum.photos/id/1015/200', alt: 'https://picsum.photos/id/1016/200' },
-  { main: 'https://picsum.photos/id/1018/200', alt: 'https://picsum.photos/id/1019/200' },
-  { main: 'https://picsum.photos/id/1020/200', alt: 'https://picsum.photos/id/1021/200' },
-  { main: 'https://picsum.photos/id/1022/200', alt: 'https://picsum.photos/id/1023/200' },
-  { main: 'https://picsum.photos/id/1025/200', alt: 'https://picsum.photos/id/1026/200' },
-  { main: 'https://picsum.photos/id/1031/200', alt: 'https://picsum.photos/id/1032/200' }, // ✅ Gambar ke-8 diganti
-  { main: 'https://picsum.photos/id/1029/200', alt: 'https://picsum.photos/id/1030/200' },
-];
+// Komponen individual untuk setiap gambar dalam grid
+const ImageItem = ({ mainSrc, altSrc }: { mainSrc: string; altSrc: string }) => {
+  const [isAlt, setIsAlt] = useState(false);
+  const [scale, setScale] = useState(1);
 
-export default function Index() {
-  const [images, setImages] = useState(
-    imageData.map((img, i) => ({
-      id: i,
-      currentSrc: img.main,
-      scale: 1,
-      flipped: false,
-    }))
-  );
+  const toggleImage = () => {
+    setIsAlt(prev => !prev);
+    setScale(prev => Math.min(prev * 1.2, 2));
+  };
 
-  const handlePress = (id: number) => {
-    setImages(prev =>
-      prev.map(img => {
-        if (img.id === id) {
-          const newScale = Math.min(img.scale * 1.2, 2);
-          const flipped = !img.flipped;
-          const newSrc = flipped ? imageData[img.id].alt : imageData[img.id].main;
-          return { ...img, currentSrc: newSrc, scale: newScale, flipped };
-        }
-        return img;
-      })
-    );
+  const handleError = () => {
+    Alert.alert('Gambar gagal dimuat');
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.grid}>
-        {images.map(img => (
-          <TouchableOpacity key={img.id} onPress={() => handlePress(img.id)} style={styles.cell}>
-            <Image
-              source={{ uri: img.currentSrc }}
-              style={[styles.image, { transform: [{ scale: img.scale }] }]}
-              onError={() => console.warn(`Gagal muat gambar ID: ${img.id}`)}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+    <Pressable onPress={toggleImage} style={[styles.box, { zIndex: scale > 1 ? 1 : 0 }]}>
+      <Image
+        source={{ uri: isAlt ? altSrc : mainSrc }}
+        style={[styles.img, { transform: [{ scale }] }]}
+        resizeMode="cover"
+        onError={handleError}
+      />
+    </Pressable>
+  );
+};
+
+// Dataset 9 gambar utama dan alternatif
+const sources = [
+  { main: 'https://picsum.photos/id/111/200', alt: 'https://picsum.photos/id/112/200' },
+  { main: 'https://picsum.photos/id/113/200', alt: 'https://picsum.photos/id/114/200' },
+  { main: 'https://picsum.photos/id/115/200', alt: 'https://picsum.photos/id/116/200' },
+  { main: 'https://picsum.photos/id/117/200', alt: 'https://picsum.photos/id/118/200' },
+  { main: 'https://picsum.photos/id/119/200', alt: 'https://picsum.photos/id/120/200' },
+  { main: 'https://picsum.photos/id/121/200', alt: 'https://picsum.photos/id/122/200' },
+  { main: 'https://picsum.photos/id/123/200', alt: 'https://picsum.photos/id/124/200' },
+  { main: 'https://picsum.photos/id/125/200', alt: 'https://picsum.photos/id/126/200' },
+  { main: 'https://picsum.photos/id/127/200', alt: 'https://picsum.photos/id/128/200' },
+];
+
+export default function App() {
+  return (
+    <SafeAreaView style={styles.screen}>
+      <FlatList
+        data={sources}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => <ImageItem mainSrc={item.main} altSrc={item.alt} />}
+        numColumns={3}
+      />
+    </SafeAreaView>
   );
 }
 
+const columns = 3;
+const spacing = 10;
+const screenW = Dimensions.get('window').width;
+const cellW = (screenW - spacing * (columns + 1)) / columns;
+
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: 50,
-    backgroundColor: '#fff',
+  screen: {
+    flex: 1,
+    backgroundColor: '#fafafa',
+    paddingHorizontal: spacing / 2,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: 330,
+  box: {
+    width: cellW,
+    height: cellW,
+    margin: spacing / 2,
+    backgroundColor: '#ddd',
     justifyContent: 'center',
-  },
-  cell: {
-    width: 100,
-    height: 100,
-    margin: 5,
-    backgroundColor: '#eee',
-    borderRadius: 10,
+    alignItems: 'center',
     overflow: 'hidden',
+    borderRadius: 10,
   },
-  image: {
+  img: {
     width: '100%',
     height: '100%',
     borderRadius: 10,
