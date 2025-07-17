@@ -1,90 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Alert,
   Dimensions,
   FlatList,
   Image,
   Pressable,
-  SafeAreaView,
   StyleSheet,
-} from 'react-native';
+  View,
+} from "react-native";
 
-// Komponen individual untuk setiap gambar dalam grid
-const ImageItem = ({ mainSrc, altSrc }: { mainSrc: string; altSrc: string }) => {
-  const [isAlt, setIsAlt] = useState(false);
+type ImageItemProps = {
+  uri: string;
+};
+
+const ImageItem: React.FC<ImageItemProps> = ({ uri }) => {
   const [scale, setScale] = useState(1);
 
-  const toggleImage = () => {
-    setIsAlt(prev => !prev);
-    setScale(prev => Math.min(prev * 1.2, 2));
-  };
-
-  const handleError = () => {
-    Alert.alert('Gambar gagal dimuat');
+  const handlePress = () => {
+    setScale((prev) => (prev < 2 ? prev + 0.2 : 1));
   };
 
   return (
-    <Pressable onPress={toggleImage} style={[styles.box, { zIndex: scale > 1 ? 1 : 0 }]}>
+    <Pressable onPress={handlePress}>
       <Image
-        source={{ uri: isAlt ? altSrc : mainSrc }}
-        style={[styles.img, { transform: [{ scale }] }]}
-        resizeMode="cover"
-        onError={handleError}
+        source={{ uri }}
+        style={[
+          styles.image,
+          {
+            transform: [{ scale }],
+          },
+        ]}
       />
     </Pressable>
   );
 };
 
-// Dataset 9 gambar utama dan alternatif
-const sources = [
-  { main: 'https://picsum.photos/id/111/200', alt: 'https://picsum.photos/id/112/200' },
-  { main: 'https://picsum.photos/id/113/200', alt: 'https://picsum.photos/id/114/200' },
-  { main: 'https://picsum.photos/id/115/200', alt: 'https://picsum.photos/id/116/200' },
-  { main: 'https://picsum.photos/id/117/200', alt: 'https://picsum.photos/id/118/200' },
-  { main: 'https://picsum.photos/id/119/200', alt: 'https://picsum.photos/id/120/200' },
-  { main: 'https://picsum.photos/id/121/200', alt: 'https://picsum.photos/id/122/200' },
-  { main: 'https://picsum.photos/id/123/200', alt: 'https://picsum.photos/id/124/200' },
-  { main: 'https://picsum.photos/id/125/200', alt: 'https://picsum.photos/id/126/200' },
-  { main: 'https://picsum.photos/id/127/200', alt: 'https://picsum.photos/id/128/200' },
+const imageUrls = [
+  "https://picsum.photos/id/1011/300/300",
+  "https://picsum.photos/id/1015/300/300",
+  "https://picsum.photos/id/1016/300/300",
+  "https://picsum.photos/id/1020/300/300",
+  "https://picsum.photos/id/1024/300/300",
+  "https://picsum.photos/id/1025/300/300",
+  "https://picsum.photos/id/1027/300/300",
+  "https://picsum.photos/id/1033/300/300",
+  "https://picsum.photos/id/1035/300/300",
 ];
 
-export default function App() {
+export default function Index() {
   return (
-    <SafeAreaView style={styles.screen}>
+    <View style={styles.container}>
       <FlatList
-        data={sources}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => <ImageItem mainSrc={item.main} altSrc={item.alt} />}
+        data={imageUrls}
+        keyExtractor={(item, index) => index.toString()}
         numColumns={3}
+        renderItem={({ item }) => <ImageItem uri={item} />}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
-const columns = 3;
-const spacing = 10;
-const screenW = Dimensions.get('window').width;
-const cellW = (screenW - spacing * (columns + 1)) / columns;
+const screenWidth = Dimensions.get("window").width;
+const imageSize = screenWidth / 3 - 10;
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: '#fafafa',
-    paddingHorizontal: spacing / 2,
+    padding: 10,
+    backgroundColor: "#F9F9F9",
   },
-  box: {
-    width: cellW,
-    height: cellW,
-    margin: spacing / 2,
-    backgroundColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderRadius: 10,
-  },
-  img: {
-    width: '100%',
-    height: '100%',
+  image: {
+    width: imageSize,
+    height: imageSize,
+    margin: 5,
     borderRadius: 10,
   },
 });
